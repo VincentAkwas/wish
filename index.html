@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WishWave – Birthday Wishes That Feel Like Magic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<style>
+  :root {
+    --gold: #D4A853;
+    --gold-light: #F5D98B;
+    --cream: #FDF8EE;
+    --deep: #1A1008;
+    --warm: #8B4513;
+    --rose: #C9616A;
+    --sage: #5A8A6A;
+    --ink: #2C1A0E;
+    --muted: #7A6A5A;
+    --card-bg: rgba(255,255,255,0.92);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── ANIMATED BACKGROUND ─── */
+  .bg-canvas {
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse at 20% 20%, #fff8e8 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, #fde8d8 0%, transparent 60%),
+                radial-gradient(ellipse at 50% 50%, #fdf8ee 0%, #f5e8d0 100%);
+  }
+  .bg-canvas::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4A853' fill-opacity='0.06'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* floating confetti */
+  .confetti-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+  .dot {
+    position: absolute;
+    border-radius: 50%;
+    animation: floatUp linear infinite;
+    opacity: 0;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.7; }
+    90%  { opacity: 0.5; }
+    100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ─── LAYOUT ─── */
+  .page { position: relative; z-index: 2; }
+
+  /* ─── HEADER ─── */
+  header {
+    text-align: center;
+    padding: 60px 20px 30px;
+    position: relative;
+  }
+  .logo-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--deep); color: var(--gold);
+    padding: 8px 20px; border-radius: 100px;
+    font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 24px;
+    animation: fadeDown 0.8s ease both;
+  }
+  .logo-badge .wave { font-size: 16px; animation: waveHand 1.5s ease-in-out infinite; display: inline-block; }
+  @keyframes waveHand {
+    0%,100% { transform: rotate(0deg); }
+    25% { transform: rotate(20deg); }
+    75% { transform: rotate(-10deg); }
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(42px, 8vw, 90px);
+    font-weight: 900;
+    line-height: 1;
+    color: var(--deep);
+    animation: fadeDown 0.8s 0.1s ease both;
+  }
+  h1 span { color: var(--gold); font-style: italic; }
+  .tagline {
+    margin-top: 16px;
+    font-size: 16px; color: var(--muted); font-weight: 300;
+    animation: fadeDown 0.8s 0.2s ease both;
+    max-width: 420px; margin-inline: auto;
+    line-height: 1.7;
+  }
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── SECTION TABS ─── */
+  .tabs-wrapper {
+    display: flex; justify-content: center; gap: 12px;
+    padding: 20px 20px 0;
+    flex-wrap: wrap;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .tab-btn {
+    padding: 10px 24px; border-radius: 100px;
+    border: 2px solid var(--gold);
+    background: transparent; color: var(--warm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s;
+    letter-spacing: 0.5px;
+  }
+  .tab-btn:hover { background: var(--gold-light); }
+  .tab-btn.active { background: var(--gold); color: var(--deep); }
+
+  /* KEY TAB – admin */
+  .tab-btn.key-tab {
+    border-color: var(--deep);
+    color: var(--deep);
+    position: relative;
+    overflow: hidden;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tab-btn.key-tab svg { width: 16px; height: 16px; }
+  .tab-btn.key-tab::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--deep);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s;
+    z-index: -1;
+  }
+  .tab-btn.key-tab:hover { color: var(--gold); }
+  .tab-btn.key-tab:hover::before { transform: scaleX(1); }
+  .tab-btn.key-tab.active { background: var(--deep); color: var(--gold); }
+
+  /* ─── MAIN CARD ─── */
+  .main-card {
+    max-width: 620px; margin: 30px auto 60px;
+    background: var(--card-bg);
+    border-radius: 28px;
+    box-shadow: 0 8px 60px rgba(212,168,83,0.18), 0 2px 12px rgba(0,0,0,0.06);
+    padding: 44px 48px;
+    animation: fadeUp 0.8s 0.4s ease both;
+    border: 1px solid rgba(212,168,83,0.2);
+    position: relative;
+    overflow: hidden;
+  }
+  .main-card::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(212,168,83,0.12) 0%, transparent 70%);
+    border-radius: 50%; pointer-events: none;
+  }
+
+  /* ─── SECTIONS ─── */
+  .section { display: none; }
+  .section.active { display: block; animation: sectionIn 0.4s ease; }
+  @keyframes sectionIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 700;
+    color: var(--deep); margin-bottom: 6px;
+  }
+  .section-sub {
+    font-size: 14px; color: var(--muted);
+    margin-bottom: 32px; line-height: 1.6;
+  }
+
+  /* ─── FORM ─── */
+  .form-group { margin-bottom: 20px; }
+  label {
+    display: block;
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--muted); margin-bottom: 8px; font-weight: 500;
+  }
+  input, select {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid rgba(212,168,83,0.3);
+    border-radius: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    background: rgba(255,252,245,0.8);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  input:focus, select:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 4px rgba(212,168,83,0.12);
+  }
+  input::placeholder { color: #C8B89A; }
+
+  .btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--gold), var(--warm));
+    border: none; border-radius: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px; font-weight: 500;
+    color: white; cursor: pointer;
+    margin-top: 8px;
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 20px rgba(212,168,83,0.35);
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(212,168,83,0.45); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .btn-outline {
+    background: transparent;
+    border: 2px solid var(--gold);
+    color: var(--warm);
+    box-shadow: none;
+  }
+  .btn-outline:hover { background: rgba(212,168,83,0.1); box-shadow: none; }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--deep); color: var(--gold-light);
+    padding: 14px 28px; border-radius: 100px;
+    font-size: 14px; font-weight: 500;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 999; white-space: nowrap;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ─── SUCCESS STATE ─── */
+  .success-box {
+    text-align: center; padding: 20px 0;
+  }
+  .success-icon {
+    font-size: 64px; display: block; margin-bottom: 16px;
+    animation: popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+  @keyframes popIn {
+    from { transform: scale(0); }
+    to   { transform: scale(1); }
+  }
+  .success-box h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; color: var(--deep); margin-bottom: 10px;
+  }
+  .success-box p { color: var(--muted); line-height: 1.7; font-size: 15px; }
+  .success-box .highlight {
+    display: inline-block;
+    background: rgba(212,168,83,0.15);
+    color: var(--warm);
+    padding: 4px 12px; border-radius: 100px;
+    font-weight: 500; margin-top: 12px;
+  }
+
+  /* ─── PREVIEW CARD ─── */
+  .wish-preview {
+    background: linear-gradient(135deg, #1A1008, #3D1F0A);
+    border-radius: 20px; padding: 32px;
+    color: #F5D98B;
+    margin-top: 24px;
+    position: relative; overflow: hidden;
+  }
+  .wish-preview::before {
+    content: '✨';
+    position: absolute; font-size: 80px; opacity: 0.08;
+    right: -10px; top: -10px;
+  }
+  .wish-preview .month-tag {
+    display: inline-block;
+    background: rgba(212,168,83,0.2);
+    border: 1px solid rgba(212,168,83,0.4);
+    padding: 4px 14px; border-radius: 100px;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 14px; color: var(--gold-light);
+  }
+  .wish-preview p {
+    font-family: 'Playfair Display', serif;
+    font-style: italic; line-height: 1.8; font-size: 15px;
+    color: rgba(245,217,139,0.9);
+  }
+  .wish-preview .wish-name {
+    font-size: 20px; font-weight: 700; color: var(--gold-light);
+    margin-bottom: 10px; font-style: normal;
+    font-family: 'Playfair Display', serif;
+  }
+
+  /* ─── ADMIN PORTAL ─── */
+  .pin-pad {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; max-width: 280px; margin: 24px auto;
+  }
+  .pin-key {
+    aspect-ratio: 1;
+    background: rgba(255,255,255,0.8);
+    border: 2px solid rgba(212,168,83,0.3);
+    border-radius: 16px;
+    font-size: 20px; font-weight: 600; cursor: pointer;
+    color: var(--deep);
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+    user-select: none;
+  }
+  .pin-key:hover { background: var(--gold-light); border-color: var(--gold); transform: scale(1.05); }
+  .pin-key:active { transform: scale(0.95); }
+  .pin-key.delete { background: rgba(201,97,106,0.1); border-color: rgba(201,97,106,0.3); color: var(--rose); }
+  .pin-key.enter  { background: var(--deep); border-color: var(--deep); color: var(--gold); }
+  .pin-key.enter:hover { background: #2c1f0a; }
+
+  .pin-display {
+    display: flex; gap: 10px; justify-content: center;
+    margin-bottom: 4px;
+  }
+  .pin-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 2px solid var(--gold);
+    background: transparent;
+    transition: background 0.2s;
+  }
+  .pin-dot.filled { background: var(--gold); }
+
+  .pin-error { color: var(--rose); font-size: 13px; text-align: center; height: 18px; margin-top: 4px; }
+
+  /* ─── ADMIN TABLE ─── */
+  .admin-stats {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px; margin-bottom: 24px;
+  }
+  .stat-card {
+    background: linear-gradient(135deg, var(--deep), #2c1a0e);
+    color: var(--gold-light); border-radius: 16px;
+    padding: 18px; text-align: center;
+  }
+  .stat-card .num { font-size: 28px; font-weight: 700; font-family: 'Playfair Display', serif; }
+  .stat-card .lbl { font-size: 11px; opacity: 0.7; letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+
+  .admin-table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid rgba(212,168,83,0.2); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: var(--deep); color: var(--gold-light);
+    padding: 12px 14px; text-align: left;
+    font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+    font-weight: 500;
+  }
+  td { padding: 12px 14px; border-bottom: 1px solid rgba(212,168,83,0.1); color: var(--ink); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(212,168,83,0.05); }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 100px;
+    font-size: 11px; font-weight: 500;
+  }
+  .badge.sent { background: rgba(90,138,106,0.15); color: var(--sage); }
+  .badge.pending { background: rgba(212,168,83,0.15); color: var(--warm); }
+  .badge.today { background: rgba(201,97,106,0.15); color: var(--rose); }
+
+  /* test section */
+  .test-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 500px) { .test-form { grid-template-columns: 1fr; } }
+  .test-result {
+    margin-top: 16px; padding: 16px;
+    background: rgba(90,138,106,0.1);
+    border: 1px solid rgba(90,138,106,0.3);
+    border-radius: 12px; font-size: 13px; color: var(--sage);
+    display: none;
+  }
+  .test-result.show { display: block; animation: sectionIn 0.3s ease; }
+
+  /* ─── HOW IT WORKS ─── */
+  .steps { display: flex; flex-direction: column; gap: 20px; }
+  .step {
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+  .step-num {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--gold); color: var(--deep);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-body h4 { font-size: 15px; font-weight: 600; color: var(--deep); margin-bottom: 4px; }
+  .step-body p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: rgba(212,168,83,0.4); border-radius: 3px; }
+
+  @media (max-width: 640px) {
+    .main-card { margin: 20px 16px 60px; padding: 30px 24px; }
+    .admin-stats { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-canvas"></div>
+<div class="confetti-wrap" id="confetti"></div>
+
+<div class="page">
+  <header>
+    <div class="logo-badge"><span class="wave">🎂</span> WishWave</div>
+    <h1>Birthday <span>Wishes</span><br>That Feel Like Magic</h1>
+    <p class="tagline">Fill in your details once. We'll surprise you with a heartfelt message exactly at midnight on your birthday.</p>
+  </header>
+
+  <div class="tabs-wrapper">
+    <button class="tab-btn active" onclick="switchTab('register')">🎉 Register</button>
+    <button class="tab-btn" onclick="switchTab('howit')">✨ How It Works</button>
+    <button class="tab-btn key-tab" onclick="openAdminGate()" id="adminTabBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="8" cy="15" r="4"/>
+        <path d="M12 15h8M16 11v8"/>
+      </svg>
+      Admin
+    </button>
+  </div>
+
+  <div class="main-card">
+
+    <!-- ══ REGISTER ══ -->
+    <div class="section active" id="sec-register">
+      <div class="section-title">Your Birthday, Your Moment 🎁</div>
+      <p class="section-sub">We'll send a warm, personalised wish right to your inbox — at the stroke of midnight on your special day.</p>
+
+      <div id="registerForm">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="reg-name" placeholder="e.g. Abena Mensah" maxlength="80" />
+        </div>
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" id="reg-dob" />
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="reg-email" placeholder="you@example.com" />
+        </div>
+        <button class="btn" onclick="handleRegister()" id="regBtn">Send Me Birthday Wishes 🎊</button>
+      </div>
+
+      <div class="success-box" id="registerSuccess" style="display:none">
+        <span class="success-icon">🎉</span>
+        <h2>You're all set!</h2>
+        <p>We have your details safe and sound. On the eve of your birthday, expect a beautiful surprise in your inbox.</p>
+        <span class="highlight" id="successDate"></span>
+      </div>
+    </div>
+
+    <!-- ══ HOW IT WORKS ══ -->
+    <div class="section" id="sec-howit">
+      <div class="section-title">Simple as Cake 🍰</div>
+      <p class="section-sub">No logins, no tracking — just good vibes sent with love.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Fill in your details</h4>
+            <p>We only need your name, date of birth, and the email where you'd like to receive your birthday wish.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>We store it safely</h4>
+            <p>Your info is saved to a private spreadsheet. We never share, sell, or misuse it. Ever.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Midnight magic ✨</h4>
+            <p>At exactly 12:00 AM on your birthday, a personalised wish crafted for your birth month lands in your inbox.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Different every month</h4>
+            <p>Each of the 12 months has its own unique, heartfelt message. Share the platform with friends — they'll get their own special wish too!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ADMIN PIN GATE ══ -->
+    <div class="section" id="sec-pin">
+      <div class="section-title" style="text-align:center">🔐 Admin Access</div>
+      <p class="section-sub" style="text-align:center">Enter your 4-digit PIN to continue</p>
+
+      <div class="pin-display">
+        <div class="pin-dot" id="d0"></div>
+        <div class="pin-dot" id="d1"></div>
+        <div class="pin-dot" id="d2"></div>
+        <div class="pin-dot" id="d3"></div>
+      </div>
+      <div class="pin-error" id="pinError"></div>
+
+      <div class="pin-pad">
+        <div class="pin-key" onclick="pinPress('1')">1</div>
+        <div class="pin-key" onclick="pinPress('2')">2</div>
+        <div class="pin-key" onclick="pinPress('3')">3</div>
+        <div class="pin-key" onclick="pinPress('4')">4</div>
+        <div class="pin-key" onclick="pinPress('5')">5</div>
+        <div class="pin-key" onclick="pinPress('6')">6</div>
+        <div class="pin-key" onclick="pinPress('7')">7</div>
+        <div class="pin-key" onclick="pinPress('8')">8</div>
+        <div class="pin-key" onclick="pinPress('9')">9</div>
+        <div class="pin-key delete" onclick="pinDelete()">⌫</div>
+        <div class="pin-key" onclick="pinPress('0')">0</div>
+        <div class="pin-key enter" onclick="pinSubmit()">✓</div>
+      </div>
+    </div>
+
+    <!-- ══ ADMIN PORTAL ══ -->
+    <div class="section" id="sec-admin">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div class="section-title" style="margin:0">Admin Portal 🗂️</div>
+        <button class="btn btn-outline" style="width:auto;padding:8px 18px;font-size:13px" onclick="adminLogout()">Log Out</button>
+      </div>
+
+      <div class="admin-stats">
+        <div class="stat-card"><div class="num" id="statTotal">—</div><div class="lbl">Registered</div></div>
+        <div class="stat-card"><div class="num" id="statToday">—</div><div class="lbl">Birthdays Today</div></div>
+        <div class="stat-card"><div class="num" id="statSent">—</div><div class="lbl">Wishes Sent</div></div>
+      </div>
+
+      <!-- Test Section -->
+      <div style="margin-bottom:24px">
+        <div class="section-title" style="font-size:18px;margin-bottom:6px">🧪 Send a Test Wish</div>
+        <p class="section-sub" style="margin-bottom:14px">Preview and send any month's wish before June 1st go-live.</p>
+        <div class="test-form">
+          <div class="form-group" style="margin:0">
+            <label>Test Name</label>
+            <input type="text" id="testName" placeholder="Full name" />
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Test Email</label>
+            <input type="email" id="testEmail" placeholder="your@email.com" />
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Birth Month (for wish)</label>
+            <select id="testMonth">
+              <option value="0">January</option><option value="1">February</option>
+              <option value="2">March</option><option value="3">April</option>
+              <option value="4">May</option><option value="5">June</option>
+              <option value="6">July</option><option value="7">August</option>
+              <option value="8">September</option><option value="9">October</option>
+              <option value="10">November</option><option value="11">December</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;display:flex;align-items:flex-end">
+            <button class="btn" style="margin:0" onclick="sendTestWish()">Send Test 🚀</button>
+          </div>
+        </div>
+        <div class="test-result" id="testResult"></div>
+        <div style="margin-top:16px">
+          <div class="section-title" style="font-size:15px;margin-bottom:8px">Wish Preview</div>
+          <div class="wish-preview" id="wishPreviewBox">
+            <div class="month-tag" id="prevMonthTag">January</div>
+            <div class="wish-name" id="prevName">Friend</div>
+            <p id="prevWish">Select a month above to preview the wish.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Registrations Table -->
+      <div class="section-title" style="font-size:18px;margin-bottom:12px">📋 All Registrations</div>
+      <div class="admin-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th><th>Birthday</th><th>Email</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="regTableBody">
+            <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px;text-align:center">Data synced from Google Sheets. Refresh to update.</p>
+    </div>
+
+  </div><!-- end main-card -->
+</div><!-- end page -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════
+//  CONFIG — replace with your real credentials
+// ════════════════════════════════════════════
+const CONFIG = {
+  EMAILJS_PUBLIC_KEY:   'YOUR_EMAILJS_PUBLIC_KEY',
+  EMAILJS_SERVICE_ID:   'YOUR_EMAILJS_SERVICE_ID',
+  EMAILJS_WISH_TEMPLATE:'YOUR_EMAILJS_WISH_TEMPLATE_ID',  // birthday wish
+  APPS_SCRIPT_URL:      'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL',
+  ADMIN_PIN:            '1234',   // ← change this to your preferred PIN
+};
+
+emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
+
+// ════════════════════════════════════════════
+//  MONTH WISHES — heartfelt, unique per month
+// ════════════════════════════════════════════
+const MONTH_WISHES = [
+  // January
+  `Today marks the beginning of something extraordinary — just like January marks the beginning of a brand new year. You arrived in the coldest month and yet you've always had the warmest heart. May this birthday wrap you in laughter, in love, and in the quiet satisfaction of knowing how deeply you matter to the people around you. Here's to every dream you've dared to dream — may this year be the one where they bloom. Happy Birthday, and welcome to another chapter worth celebrating! 🌟`,
+
+  // February
+  `February is the month love was made for — and no coincidence that you were born in it. You are someone who makes ordinary moments feel extraordinary just by being present in them. May your birthday be as beautiful as you've made the days of everyone lucky enough to know you. May the universe return every kindness you've given, multiplied a thousand times. Happy Birthday — you are deeply, truly loved. 💛`,
+
+  // March
+  `March brings the promise of spring — of things breaking through the cold and reaching toward the light. That's you. You have always had a gift for renewal, for picking yourself up and starting fresh without losing an ounce of your spirit. On your birthday, may every door that once seemed closed swing open wide. May you feel the warmth of a season that was made, in many ways, with someone like you in mind. Happy Birthday! 🌸`,
+
+  // April
+  `April arrives in showers and surprises — and you've always been a beautiful surprise in the lives of the people who know you. Born in the season when the earth is most alive, you carry that energy with you every single day. May this birthday be filled with the kind of joy that starts in the chest and doesn't stop. May your new year hold adventures, breakthroughs, and quiet evenings that feel like everything. Happy Birthday! 🌷`,
+
+  // May
+  `In May, the world is in full bloom — and so are you. There is something radiant about a person born in the month when flowers refuse to hold back. You've always given generously, loved fully, and shown up even when it was hard. Today is entirely yours. May it be golden. May it be warm. May every single person who has ever been glad to know you find a way to say so. Happy Birthday — you are a gift this world didn't know it needed. 🌼`,
+
+  // June
+  `June — the month the sun decides to stay a little longer, as if it knows something worth witnessing is here. And that something is you. Born at the peak of warmth, you've always radiated something that draws people in and makes them feel safe. May this birthday bring you rest where you need it, excitement where you crave it, and love in every corner. Here's to you — steady, shining, and so very worthy of celebration. Happy Birthday! ☀️`,
+
+  // July
+  `July blazes with fire and freedom — and you carry both in everything you do. There is a boldness to you, a courage that doesn't always announce itself but quietly shows up when it matters most. On your birthday, may you feel celebrated in the biggest and smallest ways. May this new year of your life be the most alive you've ever felt. You deserve the kind of happiness that catches you off guard and stays. Happy Birthday! 🎆`,
+
+  // August
+  `August is golden and unhurried — and there's something deeply graceful about people born in it. You have a way of making everyone around you feel like there's no rush, like this moment right here is enough. On your birthday, may you feel the fullness of that gift reflected back at you. May this year surprise you with beauty you didn't plan for and peace you didn't expect. Happy Birthday — you are so very worth celebrating. 🌻`,
+
+  // September
+  `September is the month of harvest — and you are proof that the most beautiful things take time to grow. Born as the seasons shift, you've always had the rare gift of knowing when to hold on and when to let go. May this birthday mark the beginning of a season of abundance for you — in love, in health, in purpose, and in joy. You've planted so much good in this world. May it all come back to you now. Happy Birthday! 🍂`,
+
+  // October
+  `October is magic wrapped in falling leaves — and you've always had that quality about you. There is depth to you, a richness, like a story that keeps getting better with every page. On your birthday, may you feel the wonder of being alive — truly, fully alive. May this year carry you somewhere beautiful, and may you know, without a doubt, that you are someone the world is better for having. Happy Birthday! 🍁`,
+
+  // November
+  `November is quiet and deep — the kind of month that makes you stop and think about what really matters. And you are someone who has always known, instinctively, what matters. Your presence is the kind that leaves a room warmer after you've gone. On your birthday, may you receive a fraction of the peace and love you've given away so freely. May this year be rich with meaning, connection, and the kind of happiness that doesn't need explaining. Happy Birthday! 🕯️`,
+
+  // December
+  `December is wonder. It is light strung across dark skies, warmth saved for the coldest nights, and the kind of love that travels across distances just to find you. You were born in the most magical month — and you have always carried that magic with you. On your birthday, surrounded by the spirit of the season, may you feel how extraordinary you truly are. May this year be everything you've been quietly hoping for. Happy Birthday, and may the whole month feel like yours. ✨`
+];
+
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// ════════════════════════════════════════════
+//  CONFETTI
+// ════════════════════════════════════════════
+function spawnConfetti() {
+  const wrap = document.getElementById('confetti');
+  wrap.innerHTML = '';
+  const colors = ['#D4A853','#F5D98B','#C9616A','#5A8A6A','#8B4513','#F0C070'];
+  for (let i = 0; i < 35; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    const size = Math.random() * 10 + 5;
+    d.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}vw;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${Math.random()*8+6}s;
+      animation-delay:${Math.random()*5}s;
+      border-radius:${Math.random()>0.5?'50%':'4px'};
+    `;
+    wrap.appendChild(d);
+  }
+}
+spawnConfetti();
+
+// ════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════
+let currentTab = 'register';
+function switchTab(id) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  currentTab = id;
+  if (id === 'register') document.querySelectorAll('.tab-btn')[0].classList.add('active');
+  if (id === 'howit')    document.querySelectorAll('.tab-btn')[1].classList.add('active');
+  if (id === 'admin')    document.getElementById('adminTabBtn').classList.add('active');
+}
+
+// ════════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ════════════════════════════════════════════
+//  REGISTER
+// ════════════════════════════════════════════
+async function handleRegister() {
+  const name  = document.getElementById('reg-name').value.trim();
+  const dob   = document.getElementById('reg-dob').value;
+  const email = document.getElementById('reg-email').value.trim();
+
+  if (!name) return showToast('Please enter your full name.');
+  if (!dob)  return showToast('Please pick your date of birth.');
+  if (!email || !email.includes('@')) return showToast('Please enter a valid email.');
+
+  const btn = document.getElementById('regBtn');
+  btn.disabled = true; btn.textContent = 'Sending… 🎈';
+
+  try {
+    // 1. Save to Google Sheets via Apps Script
+    await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action:'register', name, dob, email })
+    });
+
+    // Success
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('registerSuccess').style.display = 'block';
+    document.getElementById('successDate').textContent =
+      `Your birthday: ${month} ${dobDate.getDate()}`;
+    spawnConfetti();
+
+  } catch(e) {
+    showToast('Something went wrong. Please try again.');
+    console.error(e);
+    btn.disabled = false; btn.textContent = 'Send Me Birthday Wishes 🎊';
+  }
+}
+
+// ════════════════════════════════════════════
+//  ADMIN PIN
+// ════════════════════════════════════════════
+let pinBuffer = '';
+
+function openAdminGate() {
+  pinBuffer = '';
+  updatePinDots();
+  document.getElementById('pinError').textContent = '';
+  switchTab('pin');
+  document.getElementById('adminTabBtn').classList.add('active');
+}
+
+function pinPress(d) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += d;
+  updatePinDots();
+  if (pinBuffer.length === 4) setTimeout(pinSubmit, 200);
+}
+
+function pinDelete() {
+  pinBuffer = pinBuffer.slice(0,-1);
+  updatePinDots();
+  document.getElementById('pinError').textContent = '';
+}
+
+function updatePinDots() {
+  for (let i=0;i<4;i++) {
+    document.getElementById('d'+i).classList.toggle('filled', i < pinBuffer.length);
+  }
+}
+
+function pinSubmit() {
+  if (pinBuffer === CONFIG.ADMIN_PIN) {
+    switchTab('admin');
+    loadAdminData();
+  } else {
+    document.getElementById('pinError').textContent = 'Incorrect PIN. Try again.';
+    pinBuffer = '';
+    updatePinDots();
+    document.getElementById('pinError').style.animation = 'none';
+    void document.getElementById('pinError').offsetWidth;
+  }
+}
+
+function adminLogout() {
+  pinBuffer = '';
+  switchTab('register');
+  document.querySelectorAll('.tab-btn')[0].classList.add('active');
+}
+
+// ════════════════════════════════════════════
+//  ADMIN — load data from Apps Script
+// ════════════════════════════════════════════
+async function loadAdminData() {
+  const tbody = document.getElementById('regTableBody');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr>';
+
+  try {
+    const res  = await fetch(CONFIG.APPS_SCRIPT_URL + '?action=getAll');
+    const data = await res.json();
+
+    const today = new Date();
+    const todayKey = `${today.getMonth()+1}-${today.getDate()}`;
+
+    let sentCount = 0, todayCount = 0;
+    tbody.innerHTML = '';
+
+    if (!data.rows || data.rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">No registrations yet.</td></tr>';
+      document.getElementById('statTotal').textContent = '0';
+      document.getElementById('statToday').textContent = '0';
+      document.getElementById('statSent').textContent  = '0';
+      return;
+    }
+
+    data.rows.forEach(row => {
+      const dob = new Date(row.dob);
+      const dobKey = `${dob.getMonth()+1}-${dob.getDate()}`;
+      const isToday = dobKey === todayKey;
+      const sent = row.sent === 'YES';
+      if (sent) sentCount++;
+      if (isToday) todayCount++;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${esc(row.name)}</td>
+        <td>${dob.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</td>
+        <td>${esc(row.email)}</td>
+        <td><span class="badge ${isToday?'today':sent?'sent':'pending'}">${isToday?'🎂 Today':sent?'✓ Sent':'⏳ Pending'}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('statTotal').textContent = data.rows.length;
+    document.getElementById('statToday').textContent = todayCount;
+    document.getElementById('statSent').textContent  = sentCount;
+
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">Could not load data.<br><small>Make sure your Apps Script URL is configured.</small></td></tr>`;
+  }
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ════════════════════════════════════════════
+//  TEST WISH
+// ════════════════════════════════════════════
+document.getElementById('testMonth').addEventListener('change', updateWishPreview);
+
+function updateWishPreview() {
+  const m = parseInt(document.getElementById('testMonth').value);
+  const name = document.getElementById('testName').value.trim() || 'Friend';
+  document.getElementById('prevMonthTag').textContent = MONTH_NAMES[m];
+  document.getElementById('prevName').textContent = name;
+  document.getElementById('prevWish').textContent = MONTH_WISHES[m];
+}
+document.getElementById('testName').addEventListener('input', updateWishPreview);
+updateWishPreview();
+
+async function sendTestWish() {
+  const name  = document.getElementById('testName').value.trim();
+  const email = document.getElementById('testEmail').value.trim();
+  const month = parseInt(document.getElementById('testMonth').value);
+
+  if (!name)  return showToast('Enter a test name.');
+  if (!email) return showToast('Enter a test email.');
+
+  const result = document.getElementById('testResult');
+  result.className = 'test-result';
+  result.textContent = 'Sending test…';
+  result.classList.add('show');
+
+  try {
+    await emailjs.send(CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_WISH_TEMPLATE, {
+      to_name:    name,
+      to_email:   email,
+      birth_month: MONTH_NAMES[month],
+      wish_text:  MONTH_WISHES[month]
+    });
+    result.textContent = `✅ Test wish sent to ${email}! Check your inbox (and spam folder).`;
+    result.style.background = 'rgba(90,138,106,0.1)';
+    result.style.borderColor = 'rgba(90,138,106,0.3)';
+    result.style.color = 'var(--sage)';
+  } catch(e) {
+    result.textContent = `❌ Failed: ${e.text || e.message || 'Unknown error'}`;
+    result.style.background = 'rgba(201,97,106,0.1)';
+    result.style.borderColor = 'rgba(201,97,106,0.3)';
+    result.style.color = 'var(--rose)';
+    console.error(e);
+  }
+}
+</script>
+</body>
+</html>
