@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Birthday Backlog – WishWave</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  :root {
+    --gold:#D4A853;--gold-light:#F5D98B;--cream:#FDF8EE;
+    --deep:#1A1008;--warm:#8B4513;--ink:#2C1A0E;--muted:#7A6A5A;
+    --card-bg:rgba(255,255,255,0.95);
+    --green-bg:#EAF3DE;--green-fg:#3B6D11;
+    --amber-bg:#FAEEDA;--amber-fg:#854F0B;
+    --coral-bg:#FAECE7;--coral-fg:#993C1D;
+    --blue-bg:#E6F1FB;--blue-fg:#185FA5;
+    --gray-bg:#F1EFE8;--gray-fg:#5F5E5A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh}
+  .bg{position:fixed;inset:0;z-index:0;
+    background:radial-gradient(ellipse at 20% 20%,#fff8e8 0%,transparent 60%),
+               radial-gradient(ellipse at 80% 80%,#fde8d8 0%,transparent 60%),
+               linear-gradient(135deg,#fdf8ee,#f5e8d0)}
+  .page{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:40px 20px 80px}
+
+  header{text-align:center;margin-bottom:36px}
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);
+    text-decoration:none;margin-bottom:20px;padding:6px 14px;border:1px solid rgba(212,168,83,0.3);
+    border-radius:100px;transition:all .2s}
+  .back-link:hover{background:rgba(212,168,83,0.1);color:var(--warm)}
+  .logo{display:inline-flex;align-items:center;gap:8px;background:var(--deep);color:var(--gold);
+    padding:6px 18px;border-radius:100px;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-bottom:16px}
+  h1{font-family:'Playfair Display',serif;font-size:clamp(30px,6vw,54px);font-weight:700;color:var(--deep);line-height:1.1}
+  h1 span{color:var(--gold);font-style:italic}
+  .tagline{font-size:15px;color:var(--muted);margin-top:10px;font-weight:300}
+
+  /* sync bar */
+  .sync-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+    background:var(--card-bg);border:1px solid rgba(212,168,83,0.2);border-radius:14px;
+    padding:12px 18px;margin-bottom:20px;font-size:13px;color:var(--muted)}
+  .sync-bar .left{display:flex;align-items:center;gap:8px}
+  .sync-dot{width:8px;height:8px;border-radius:50%;background:#C8B89A;flex-shrink:0;transition:background .3s}
+  .sync-dot.syncing{background:var(--gold);animation:pulse 1s infinite}
+  .sync-dot.ok{background:#5A8A6A}
+  .sync-dot.err{background:#C9616A}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .btn-sync{padding:6px 14px;border-radius:100px;border:1.5px solid rgba(212,168,83,0.3);
+    background:transparent;color:var(--warm);font-family:'DM Sans',sans-serif;
+    font-size:12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
+  .btn-sync:hover{background:rgba(212,168,83,0.1)}
+
+  /* source tabs */
+  .source-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+  .src-tab{padding:8px 18px;border-radius:100px;border:1.5px solid rgba(212,168,83,0.3);
+    background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;
+    font-size:13px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+  .src-tab:hover{background:rgba(212,168,83,0.08)}
+  .src-tab.active{background:var(--deep);color:var(--gold);border-color:var(--deep)}
+  .src-badge{background:rgba(212,168,83,0.25);color:var(--gold);font-size:10px;
+    padding:1px 7px;border-radius:10px;font-weight:500}
+  .src-tab.active .src-badge{background:rgba(255,255,255,0.15);color:var(--gold-light)}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:24px}
+  .stat{background:var(--card-bg);border:1px solid rgba(212,168,83,0.2);border-radius:14px;padding:14px 16px}
+  .stat .n{font-size:24px;font-weight:500;color:var(--deep);font-family:'Playfair Display',serif}
+  .stat .l{font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.5px;text-transform:uppercase}
+
+  /* add form */
+  .add-card{background:var(--card-bg);border:1px solid rgba(212,168,83,0.25);border-radius:20px;
+    padding:22px 26px;margin-bottom:20px;box-shadow:0 4px 20px rgba(212,168,83,0.08)}
+  .add-card h3{font-size:14px;font-weight:500;color:var(--muted);margin-bottom:14px;
+    display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:1px}
+  .form-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end}
+  label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:5px}
+  input,select{width:100%;padding:10px 13px;border:1.5px solid rgba(212,168,83,0.3);border-radius:11px;
+    font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:#fffdf7;outline:none;transition:border-color .2s}
+  input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,83,0.1)}
+  input::placeholder{color:#C8B89A}
+  .btn-add{padding:10px 18px;background:linear-gradient(135deg,var(--gold),var(--warm));border:none;
+    border-radius:11px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:#fff;
+    cursor:pointer;white-space:nowrap;transition:transform .2s,box-shadow .2s;
+    box-shadow:0 4px 14px rgba(212,168,83,0.3);display:flex;align-items:center;gap:6px}
+  .btn-add:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(212,168,83,0.4)}
+
+  /* toolbar */
+  .toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+  .search-wrap{position:relative;flex:1;min-width:160px}
+  .search-wrap i{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--muted);pointer-events:none}
+  .search-wrap input{padding-left:34px;font-size:13px}
+  .filter-btn{padding:6px 14px;border-radius:100px;border:1.5px solid rgba(212,168,83,0.3);
+    background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;
+    font-size:13px;cursor:pointer;transition:all .15s;white-space:nowrap}
+  .filter-btn:hover{background:rgba(212,168,83,0.08)}
+  .filter-btn.active{background:var(--gold);color:var(--deep);border-color:var(--gold);font-weight:500}
+  .btn-export{padding:6px 14px;border-radius:100px;border:1.5px solid rgba(212,168,83,0.3);
+    background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;
+    font-size:13px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;margin-left:auto}
+  .btn-export:hover{background:rgba(212,168,83,0.08);color:var(--warm)}
+
+  /* list */
+  .list{display:flex;flex-direction:column;gap:8px}
+  .entry{background:var(--card-bg);border:1px solid rgba(212,168,83,0.2);border-radius:14px;
+    padding:13px 16px;display:flex;align-items:center;gap:12px;transition:border-color .2s,box-shadow .2s}
+  .entry:hover{border-color:rgba(212,168,83,0.4);box-shadow:0 2px 10px rgba(212,168,83,0.1)}
+  .entry.is-today{border-left:3px solid #D85A30;border-radius:0 14px 14px 0}
+  .entry.is-soon{border-left:3px solid #BA7517;border-radius:0 14px 14px 0}
+  .avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:500;flex-shrink:0}
+  .entry-body{flex:1;min-width:0}
+  .entry-name{font-size:15px;font-weight:500;color:var(--deep);display:flex;align-items:center;gap:7px}
+  .source-pill{font-size:10px;padding:2px 8px;border-radius:8px;font-weight:500}
+  .pill-wave{background:rgba(212,168,83,0.15);color:var(--warm)}
+  .pill-manual{background:rgba(90,138,106,0.12);color:#3B6D11}
+  .entry-meta{font-size:12px;color:var(--muted);margin-top:2px}
+  .entry-right{display:flex;align-items:center;gap:7px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+  .days-count{font-size:13px;font-weight:500;min-width:56px;text-align:right}
+  .badge{font-size:11px;padding:3px 9px;border-radius:9px;font-weight:500;white-space:nowrap}
+  .b-today{background:var(--coral-bg);color:var(--coral-fg)}
+  .b-soon{background:var(--amber-bg);color:var(--amber-fg)}
+  .b-sent{background:var(--green-bg);color:var(--green-fg)}
+  .b-future{background:var(--blue-bg);color:var(--blue-fg)}
+  .b-gray{background:var(--gray-bg);color:var(--gray-fg)}
+  .wish-btn{font-size:12px;padding:4px 11px;border-radius:9px;
+    border:1.5px solid rgba(212,168,83,0.3);background:transparent;color:var(--muted);
+    cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px;font-family:'DM Sans',sans-serif}
+  .wish-btn:hover,.wish-btn.done{background:var(--green-bg);color:var(--green-fg);border-color:rgba(90,138,106,0.4)}
+  .del-btn{background:transparent;border:none;color:#C8B89A;cursor:pointer;
+    padding:4px;border-radius:7px;font-size:17px;line-height:1;transition:color .15s}
+  .del-btn:hover{color:#D85A30}
+  .empty{text-align:center;padding:3rem 1rem;color:var(--muted)}
+  .empty i{font-size:38px;display:block;margin-bottom:10px;opacity:.35}
+
+  /* loading skeleton */
+  .skeleton{background:linear-gradient(90deg,rgba(212,168,83,0.08) 25%,rgba(212,168,83,0.15) 50%,rgba(212,168,83,0.08) 75%);
+    background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:10px;height:16px;margin:4px 0}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(60px);
+    background:var(--deep);color:var(--gold-light);padding:11px 22px;border-radius:100px;
+    font-size:13px;font-weight:500;transition:transform .35s cubic-bezier(.175,.885,.32,1.275);
+    z-index:99;white-space:nowrap;box-shadow:0 6px 22px rgba(0,0,0,0.2)}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:600px){
+    .form-row{grid-template-columns:1fr 1fr}
+    .days-count{display:none}
+    .page{padding:22px 12px 60px}
+  }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="page">
+
+  <header>
+    <a class="back-link" href="index.html"><i class="ti ti-arrow-left"></i> Back to WishWave</a>
+    <div class="logo">🎂 WishWave</div>
+    <h1>Birthday <span>Backlog</span></h1>
+    <p class="tagline">Everyone who registered on WishWave — plus anyone you add manually. Never miss a birthday again.</p>
+  </header>
+
+  <!-- SYNC BAR -->
+  <div class="sync-bar">
+    <div class="left">
+      <div class="sync-dot" id="syncDot"></div>
+      <span id="syncStatus">Ready to sync</span>
+    </div>
+    <button class="btn-sync" onclick="syncFromSheet()">
+      <i class="ti ti-refresh" style="font-size:13px"></i> Sync from WishWave
+    </button>
+  </div>
+
+  <!-- SOURCE TABS -->
+  <div class="source-tabs">
+    <button class="src-tab active" onclick="setSource('all',this)">
+      All <span class="src-badge" id="badgeAll">0</span>
+    </button>
+    <button class="src-tab" onclick="setSource('wishwave',this)">
+      <i class="ti ti-wave-sine" style="font-size:14px"></i> WishWave registrations
+      <span class="src-badge" id="badgeWave">0</span>
+    </button>
+    <button class="src-tab" onclick="setSource('manual',this)">
+      <i class="ti ti-pencil" style="font-size:14px"></i> Added manually
+      <span class="src-badge" id="badgeManual">0</span>
+    </button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="n" id="sTot">0</div><div class="l">Total people</div></div>
+    <div class="stat"><div class="n" id="sToday">0</div><div class="l">Birthdays today</div></div>
+    <div class="stat"><div class="n" id="s7">0</div><div class="l">Next 7 days</div></div>
+    <div class="stat"><div class="n" id="s30">0</div><div class="l">Next 30 days</div></div>
+    <div class="stat"><div class="n" id="sSent">0</div><div class="l">Wishes sent</div></div>
+  </div>
+
+  <!-- ADD MANUAL -->
+  <div class="add-card">
+    <h3><i class="ti ti-user-plus" style="font-size:15px;color:var(--gold)"></i> Add someone manually</h3>
+    <div class="form-row">
+      <div><label>Full name</label><input type="text" id="aName" placeholder="e.g. Abena Mensah"></div>
+      <div><label>Date of birth</label><input type="date" id="aDob"></div>
+      <div>
+        <label>Relationship</label>
+        <select id="aRel">
+          <option>Friend</option><option>Family</option>
+          <option>Classmate</option><option>Colleague</option><option>Other</option>
+        </select>
+      </div>
+      <div><label>&nbsp;</label>
+        <button class="btn-add" onclick="addManual()">
+          <i class="ti ti-plus" style="font-size:15px"></i> Add
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <i class="ti ti-search"></i>
+      <input type="text" id="searchInput" placeholder="Search name…" oninput="render()">
+    </div>
+    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('today',this)">Today</button>
+    <button class="filter-btn" onclick="setFilter('week',this)">7 days</button>
+    <button class="filter-btn" onclick="setFilter('month',this)">30 days</button>
+    <button class="filter-btn" onclick="setFilter('unwished',this)">Not wished</button>
+    <button class="filter-btn" onclick="setFilter('sent',this)">Wished</button>
+    <button class="btn-export" onclick="exportCSV()"><i class="ti ti-download"></i> Export</button>
+  </div>
+
+  <div class="list" id="list"></div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwzD1ev9EYoOks-mvrbKyegkTmwjrEOYzGMVvoW97uFmSA2uh8pImMXGdLNBAfb9ulNHA/exec';
+
+const AVATARS = [
+  ['#E6F1FB','#185FA5'],['#FAEEDA','#854F0B'],['#EAF3DE','#3B6D11'],
+  ['#FAECE7','#993C1D'],['#EEEDFE','#534AB7'],['#E1F5EE','#0F6E56'],['#FBEAF0','#993556']
+];
+
+// manual entries stored in localStorage
+let manual   = JSON.parse(localStorage.getItem('ww_manual')   || '[]');
+// wished flags for ALL people (keyed by a stable id)
+let wishedMap = JSON.parse(localStorage.getItem('ww_wished')  || '{}');
+// last fetched WishWave registrations (cached)
+let waveData  = JSON.parse(localStorage.getItem('ww_wave')    || '[]');
+
+let currentFilter = 'all';
+let currentSource = 'all';
+
+function saveManual(){ localStorage.setItem('ww_manual',  JSON.stringify(manual)); }
+function saveWished(){ localStorage.setItem('ww_wished',  JSON.stringify(wishedMap)); }
+function saveWave(){   localStorage.setItem('ww_wave',    JSON.stringify(waveData)); }
+
+// ── SYNC FROM SHEET ──────────────────────────────────────────
+async function syncFromSheet(){
+  setSyncState('syncing','Syncing from WishWave…');
+  try {
+    const res  = await fetch(SCRIPT_URL + '?action=getAll');
+    const data = await res.json();
+    if(!data.rows) throw new Error('No rows returned');
+
+    // Convert sheet rows → normalised people objects
+    waveData = data.rows.map(r => ({
+      id:     'wave_' + btoa(r.email || r.name).replace(/=/g,''),
+      name:   r.name,
+      dob:    normaliseDate(r.dob),
+      email:  r.email,
+      rel:    'WishWave',
+      source: 'wishwave'
+    })).filter(p => p.dob);
+
+    saveWave();
+    setSyncState('ok', `Synced ${waveData.length} registrations · ${timeNow()}`);
+    toast(`✓ Synced ${waveData.length} people from WishWave`);
+    render();
+  } catch(e) {
+    setSyncState('err','Sync failed — check your connection');
+    toast('❌ Could not sync. Try again.');
+    console.error(e);
+  }
+}
+
+function normaliseDate(raw){
+  if(!raw) return '';
+  // handles "2000-05-14", "14/05/2000", JS Date toString, etc.
+  const d = new Date(raw);
+  if(!isNaN(d)) return d.toISOString().slice(0,10);
+  return '';
+}
+
+function setSyncState(state, msg){
+  const dot = document.getElementById('syncDot');
+  const lbl = document.getElementById('syncStatus');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = msg;
+}
+
+function timeNow(){
+  return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ── MANUAL ADD ───────────────────────────────────────────────
+function addManual(){
+  const name = document.getElementById('aName').value.trim();
+  const dob  = document.getElementById('aDob').value;
+  const rel  = document.getElementById('aRel').value;
+  if(!name) return toast('Please enter a name.');
+  if(!dob)  return toast('Please pick a date of birth.');
+  const id = 'manual_' + Date.now();
+  manual.push({ id, name, dob, rel, source:'manual' });
+  saveManual(); render();
+  document.getElementById('aName').value = '';
+  document.getElementById('aDob').value  = '';
+  toast(name + ' added! 🎉');
+}
+
+// ── WISHED TOGGLE ────────────────────────────────────────────
+function toggleWished(id){
+  wishedMap[id] = !wishedMap[id];
+  saveWished(); render();
+  toast(wishedMap[id] ? '✓ Marked as wished!' : 'Unmarked.');
+}
+
+// ── DELETE MANUAL ONLY ───────────────────────────────────────
+function deletePerson(id){
+  const p = manual.find(x=>x.id===id);
+  if(!p) return;
+  if(!confirm('Remove ' + p.name + '?')) return;
+  manual = manual.filter(x=>x.id!==id);
+  saveManual(); render();
+}
+
+// ── DATE HELPERS ─────────────────────────────────────────────
+function nextBirthday(dob){
+  const now  = new Date();
+  const d    = new Date(dob);
+  let next   = new Date(now.getFullYear(), d.getMonth(), d.getDate());
+  const today= new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if(next < today) next.setFullYear(now.getFullYear()+1);
+  return next;
+}
+function daysUntil(dob){
+  const today = new Date(new Date().toDateString());
+  return Math.round((nextBirthday(dob) - today) / 86400000);
+}
+function getBadge(days, wished){
+  if(wished)    return ['b-sent','✓ Wished'];
+  if(days===0)  return ['b-today','🎂 Today!'];
+  if(days<=7)   return ['b-soon', days+'d away'];
+  if(days<=30)  return ['b-future', days+'d away'];
+  return ['b-gray', days+'d away'];
+}
+
+// ── FILTERS / SOURCE ─────────────────────────────────────────
+function setFilter(f, btn){
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+function setSource(s, btn){
+  currentSource = s;
+  document.querySelectorAll('.src-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+// ── RENDER ───────────────────────────────────────────────────
+function render(){
+  // merge wave + manual, dedupe by email
+  const waveEmails = new Set(waveData.map(p=>p.email));
+  const filteredManual = manual.filter(p=> !p.email || !waveEmails.has(p.email));
+  let all = [...waveData, ...filteredManual].map(p=>({
+    ...p,
+    days:   daysUntil(p.dob),
+    wished: !!wishedMap[p.id]
+  }));
+
+  // source tab
+  if(currentSource==='wishwave') all = all.filter(p=>p.source==='wishwave');
+  if(currentSource==='manual')   all = all.filter(p=>p.source==='manual');
+
+  // search
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  if(q) all = all.filter(p=>p.name.toLowerCase().includes(q));
+
+  // filter
+  if(currentFilter==='today')    all = all.filter(p=>p.days===0);
+  else if(currentFilter==='week')  all = all.filter(p=>p.days<=7);
+  else if(currentFilter==='month') all = all.filter(p=>p.days<=30);
+  else if(currentFilter==='unwished') all = all.filter(p=>!p.wished);
+  else if(currentFilter==='sent') all = all.filter(p=>p.wished);
+
+  all.sort((a,b)=>a.days-b.days);
+
+  // update source badges
+  const waveAll   = [...waveData,...filteredManual];
+  document.getElementById('badgeAll').textContent    = waveAll.length;
+  document.getElementById('badgeWave').textContent   = waveData.length;
+  document.getElementById('badgeManual').textContent = filteredManual.length;
+
+  const el = document.getElementById('list');
+  if(!all.length){
+    const msg = (waveData.length===0 && manual.length===0)
+      ? 'Click "Sync from WishWave" above to load registrations, or add someone manually.'
+      : 'Nothing matches this filter.';
+    el.innerHTML = `<div class="empty"><i class="ti ti-cake"></i>${msg}</div>`;
+  } else {
+    el.innerHTML = all.map((p,i)=>{
+      const [bg,fg]     = AVATARS[i % AVATARS.length];
+      const [bCls,bTxt] = getBadge(p.days, p.wished);
+      const dob         = new Date(p.dob);
+      const dobStr      = dob.toLocaleDateString('en-GB',{day:'numeric',month:'long'});
+      const cls         = p.days===0?'entry is-today':p.days<=7&&!p.wished?'entry is-soon':'entry';
+      const daysLabel   = p.days===0?'Today':p.days===1?'Tomorrow':p.days+'d';
+      const daysColor   = p.days===0?'#993C1D':p.days<=7?'#854F0B':'var(--muted)';
+      const pillCls     = p.source==='wishwave'?'pill-wave':'pill-manual';
+      const pillTxt     = p.source==='wishwave'?'WishWave':'Manual';
+      const isManual    = p.source==='manual';
+      return `<div class="${cls}">
+        <div class="avatar" style="background:${bg};color:${fg}">${initials(p.name)}</div>
+        <div class="entry-body">
+          <div class="entry-name">
+            ${esc(p.name)}
+            <span class="source-pill ${pillCls}">${pillTxt}</span>
+          </div>
+          <div class="entry-meta">
+            <i class="ti ti-calendar" style="font-size:11px;vertical-align:-1px;margin-right:3px"></i>${dobStr}
+            ${p.email?'&middot; '+esc(p.email):'&middot; '+p.rel}
+          </div>
+        </div>
+        <div class="days-count" style="color:${daysColor}">${daysLabel}</div>
+        <div class="entry-right">
+          <span class="badge ${bCls}">${bTxt}</span>
+          <button class="wish-btn${p.wished?' done':''}" onclick="toggleWished('${p.id}')">
+            <i class="ti ti-${p.wished?'check':'heart'}" style="font-size:12px"></i>
+            ${p.wished?'Wished':'Mark wished'}
+          </button>
+          ${isManual?`<button class="del-btn" onclick="deletePerson('${p.id}')" title="Remove"><i class="ti ti-trash"></i></button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // stats
+  const base = [...waveData, ...filteredManual].map(p=>({...p,days:daysUntil(p.dob),wished:!!wishedMap[p.id]}));
+  document.getElementById('sTot').textContent   = base.length;
+  document.getElementById('sToday').textContent = base.filter(p=>p.days===0).length;
+  document.getElementById('s7').textContent     = base.filter(p=>p.days<=7).length;
+  document.getElementById('s30').textContent    = base.filter(p=>p.days<=30).length;
+  document.getElementById('sSent').textContent  = base.filter(p=>p.wished).length;
+}
+
+function initials(n){ return n.trim().split(/\s+/).map(w=>w[0].toUpperCase()).slice(0,2).join(''); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function exportCSV(){
+  const waveEmails   = new Set(waveData.map(p=>p.email));
+  const filteredManual = manual.filter(p=>!p.email||!waveEmails.has(p.email));
+  const all = [...waveData,...filteredManual].map(p=>({...p,days:daysUntil(p.dob),wished:!!wishedMap[p.id]}));
+  const rows = [['Name','Date of Birth','Email','Relationship','Source','Days Until Birthday','Wished'],
+    ...all.map(p=>[p.name,p.dob,p.email||'',p.rel,p.source,p.days,p.wished?'Yes':'No'])];
+  const csv = rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download = 'birthday-backlog.csv'; a.click();
+  toast('CSV downloaded!');
+}
+
+function toast(msg){
+  const t = document.getElementById('toastEl');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+// Show cached wave data immediately, then auto-sync
+render();
+if(waveData.length > 0){
+  setSyncState('ok', `Showing ${waveData.length} cached registrations — click Sync to refresh`);
+}
+// auto-sync on load
+syncFromSheet();
+</script>
+</body>
+</html>
